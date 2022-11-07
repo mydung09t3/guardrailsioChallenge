@@ -1,0 +1,1099 @@
+{
+	"info": {
+		"_postman_id": "c83b7f47-c77d-410a-9ce8-e6d5f90e41e0",
+		"name": "GuardRail Challenge",
+		"schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json",
+		"_exporter_id": "10781983"
+	},
+	"item": [
+		{
+			"name": "Login",
+			"event": [
+				{
+					"listen": "test",
+					"script": {
+						"exec": [
+							"var jsonData = pm.response.json();",
+							"pm.test(\"Status code is 200\", function () {",
+							"    pm.response.to.have.status(200);",
+							"});",
+							"pm.globals.set(\"token\",jsonData.authentication.token);",
+							"pm.globals.set(\"bid\", jsonData.authentication.bid)"
+						],
+						"type": "text/javascript"
+					}
+				}
+			],
+			"request": {
+				"method": "POST",
+				"header": [
+					{
+						"key": "authority",
+						"value": "juice-shop.guardrails.ai"
+					},
+					{
+						"key": "accept",
+						"value": "application/json, text/plain, */*"
+					},
+					{
+						"key": "accept-language",
+						"value": "en,en-US;q=0.9,vi-VN;q=0.8,vi;q=0.7,fr;q=0.6"
+					},
+					{
+						"key": "content-type",
+						"value": "application/json"
+					},
+					{
+						"key": "cookie",
+						"value": "language=en; welcomebanner_status=dismiss; continueCode=xYj5K86Bp7Nq2kjrWRX591myLQzdgmTVq0YxJMoPKgwnVv4EaDbZe3OlR87y; cookieconsent_status=dismiss"
+					},
+					{
+						"key": "origin",
+						"value": "https://juice-shop.guardrails.ai"
+					},
+					{
+						"key": "referer",
+						"value": "https://juice-shop.guardrails.ai/"
+					},
+					{
+						"key": "sec-ch-ua",
+						"value": "\"Google Chrome\";v=\"107\", \"Chromium\";v=\"107\", \"Not=A?Brand\";v=\"24\""
+					},
+					{
+						"key": "sec-ch-ua-mobile",
+						"value": "?0"
+					},
+					{
+						"key": "sec-ch-ua-platform",
+						"value": "\"macOS\""
+					},
+					{
+						"key": "sec-fetch-dest",
+						"value": "empty"
+					},
+					{
+						"key": "sec-fetch-mode",
+						"value": "cors"
+					},
+					{
+						"key": "sec-fetch-site",
+						"value": "same-origin"
+					},
+					{
+						"key": "user-agent",
+						"value": "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/107.0.0.0 Safari/537.36"
+					},
+					{
+						"key": "x-consumer-username",
+						"value": "admin"
+					}
+				],
+				"body": {
+					"mode": "raw",
+					"raw": "{\"email\":\"{{email}}\",\"password\":\"{{password}}\"}"
+				},
+				"url": {
+					"raw": "{{url}}/rest/user/login",
+					"host": [
+						"{{url}}"
+					],
+					"path": [
+						"rest",
+						"user",
+						"login"
+					]
+				}
+			},
+			"response": []
+		},
+		{
+			"name": "Add 1st item to basket",
+			"event": [
+				{
+					"listen": "prerequest",
+					"script": {
+						"exec": [
+							"",
+							"var bid = pm.globals.get(\"bid\");",
+							"",
+							"const getAllBasketItem = {",
+							"    url: pm.environment.get(\"url\") + '/rest/basket/' + bid ,",
+							"    header: {",
+							"        'Content-Type': 'application/json',",
+							"        'Authorization': 'Bearer ' + pm.globals.get(\"token\")",
+							"    },",
+							"    method: 'GET'",
+							"};",
+							"",
+							"pm.sendRequest(getAllBasketItem, function (err, res) {",
+							"    var products = res.json().data.Products;",
+							"    for (var i = 0; i < products.length; i++) {",
+							"        const deleteBasketItem = {",
+							"            url: pm.environment.get(\"url\") + '/api/BasketItems/' + products[i].BasketItem.id,",
+							"            header: {",
+							"                'Authorization': 'Bearer ' + pm.globals.get(\"token\")",
+							"            },",
+							"            method: 'DELETE'",
+							"        };",
+							"        pm.sendRequest(deleteBasketItem, function (deleteErr, deleteRes) {",
+							"            console.log(deleteRes.json());",
+							"        });",
+							"    }",
+							"});"
+						],
+						"type": "text/javascript"
+					}
+				},
+				{
+					"listen": "test",
+					"script": {
+						"exec": [
+							"pm.test(\"Status code is 200\", function () {",
+							"    pm.response.to.have.status(200);",
+							"});",
+							"var jsonData = pm.response.json();",
+							"pm.globals.set(\"pid\", jsonData.data.ProductId)",
+							"",
+							"var responseSchema = {",
+							"  \"$schema\": \"http://json-schema.org/draft-04/schema#\",",
+							"  \"type\": \"object\",",
+							"  \"properties\": {",
+							"    \"status\": {",
+							"      \"type\": \"string\"",
+							"    },",
+							"    \"data\": {",
+							"      \"type\": \"object\",",
+							"      \"properties\": {",
+							"        \"id\": {",
+							"          \"type\": \"integer\"",
+							"        },",
+							"        \"ProductId\": {",
+							"          \"type\": \"integer\"",
+							"        },",
+							"        \"BasketId\": {",
+							"          \"type\": \"string\"",
+							"        },",
+							"        \"quantity\": {",
+							"          \"type\": \"integer\"",
+							"        },",
+							"        \"updatedAt\": {",
+							"          \"type\": \"string\"",
+							"        },",
+							"        \"createdAt\": {",
+							"          \"type\": \"string\"",
+							"        }",
+							"      },",
+							"      \"required\": [",
+							"        \"id\",",
+							"        \"ProductId\",",
+							"        \"BasketId\",",
+							"        \"quantity\",",
+							"        \"updatedAt\",",
+							"        \"createdAt\"",
+							"      ]",
+							"    }",
+							"  },",
+							"  \"required\": [",
+							"    \"status\",",
+							"    \"data\"",
+							"  ]",
+							"}",
+							"",
+							"pm.test('Schema is valid', function () {",
+							"    pm.expect(tv4.validate(jsonData, responseSchema)).to.be.true;",
+							"});"
+						],
+						"type": "text/javascript"
+					}
+				}
+			],
+			"request": {
+				"method": "POST",
+				"header": [
+					{
+						"key": "authority",
+						"value": "juice-shop.guardrails.ai"
+					},
+					{
+						"key": "accept",
+						"value": "application/json, text/plain, */*"
+					},
+					{
+						"key": "accept-language",
+						"value": "en,en-US;q=0.9,vi-VN;q=0.8,vi;q=0.7,fr;q=0.6"
+					},
+					{
+						"key": "authorization",
+						"value": "Bearer {{token}}"
+					},
+					{
+						"key": "content-type",
+						"value": "application/json"
+					},
+					{
+						"key": "cookie",
+						"value": "language=en; welcomebanner_status=dismiss; continueCode=xYj5K86Bp7Nq2kjrWRX591myLQzdgmTVq0YxJMoPKgwnVv4EaDbZe3OlR87y; cookieconsent_status=dismiss; token=eyJ0eXAiOiJKV1QiLCJhbGciOiJSUzI1NiJ9.eyJzdGF0dXMiOiJzdWNjZXNzIiwiZGF0YSI6eyJpZCI6MjUsInVzZXJuYW1lIjoiIiwiZW1haWwiOiJpdC5kdW5nOTFAZ21haWwuY29tIiwicGFzc3dvcmQiOiI4YzU0MWIzYjZiOTIwYmZkNjdjNzQxZTRkMDZiNWY1NSIsInJvbGUiOiJjdXN0b21lciIsImRlbHV4ZVRva2VuIjoiIiwibGFzdExvZ2luSXAiOiJ1bmRlZmluZWQiLCJwcm9maWxlSW1hZ2UiOiIvYXNzZXRzL3B1YmxpYy9pbWFnZXMvdXBsb2Fkcy9kZWZhdWx0LnN2ZyIsInRvdHBTZWNyZXQiOiIiLCJpc0FjdGl2ZSI6dHJ1ZSwiY3JlYXRlZEF0IjoiMjAyMi0xMS0wMyAxNDo1ODoyNy4wNDUgKzAwOjAwIiwidXBkYXRlZEF0IjoiMjAyMi0xMS0wMyAxNTowNjo1MC44MTUgKzAwOjAwIiwiZGVsZXRlZEF0IjpudWxsfSwiaWF0IjoxNjY3NzA1ODE3LCJleHAiOjE2Njc3MjM4MTd9.HhAOJWHNpeTjJqyeV71Xa_i7UprYlEUUOebRDEqxenJeofraAGftHo4U0i-45V1nljfy97ZR-RpKE9uJcnOXBsyPnb2jChpHPjoQcBUwXkfgwGUzHjQBfk9zIIYLL5je9PdIbMGAnYtxxO7T3dpo6CxYWFUhFR4eAquvOwyOmXU"
+					},
+					{
+						"key": "origin",
+						"value": "https://juice-shop.guardrails.ai"
+					},
+					{
+						"key": "referer",
+						"value": "https://juice-shop.guardrails.ai/"
+					},
+					{
+						"key": "sec-ch-ua",
+						"value": "\"Google Chrome\";v=\"107\", \"Chromium\";v=\"107\", \"Not=A?Brand\";v=\"24\""
+					},
+					{
+						"key": "sec-ch-ua-mobile",
+						"value": "?0"
+					},
+					{
+						"key": "sec-ch-ua-platform",
+						"value": "\"macOS\""
+					},
+					{
+						"key": "sec-fetch-dest",
+						"value": "empty"
+					},
+					{
+						"key": "sec-fetch-mode",
+						"value": "cors"
+					},
+					{
+						"key": "sec-fetch-site",
+						"value": "same-origin"
+					},
+					{
+						"key": "user-agent",
+						"value": "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/107.0.0.0 Safari/537.36"
+					},
+					{
+						"key": "x-consumer-username",
+						"value": "admin"
+					}
+				],
+				"body": {
+					"mode": "raw",
+					"raw": "{\"ProductId\":1,\"BasketId\":\"{{bid}}\",\"quantity\":1}"
+				},
+				"url": {
+					"raw": "{{url}}/api/BasketItems/",
+					"host": [
+						"{{url}}"
+					],
+					"path": [
+						"api",
+						"BasketItems",
+						""
+					]
+				}
+			},
+			"response": []
+		},
+		{
+			"name": "Get basket List",
+			"event": [
+				{
+					"listen": "prerequest",
+					"script": {
+						"exec": [
+							""
+						],
+						"type": "text/javascript"
+					}
+				},
+				{
+					"listen": "test",
+					"script": {
+						"exec": [
+							"var pid = pm.globals.get(\"pid\");",
+							"var jsonData = pm.response.json();",
+							"pm.test(\"Status code is 200\", function () {",
+							"    pm.response.to.have.status(200);",
+							"});",
+							"pm.test(\"Verify response\", function () {",
+							"    pm.expect(jsonData.data.Products.length).to.be.eq(1)",
+							"    pm.expect(jsonData.data.Products[0].id).to.eq(pid);",
+							"});",
+							" pm.globals.set(\"basketItemId\", jsonData.data.Products[0].BasketItem.id);",
+							"",
+							"var responseChema = {",
+							"  \"$schema\": \"http://json-schema.org/draft-04/schema#\",",
+							"  \"type\": \"object\",",
+							"  \"properties\": {",
+							"    \"status\": {",
+							"      \"type\": \"string\"",
+							"    },",
+							"    \"data\": {",
+							"      \"type\": \"object\",",
+							"      \"properties\": {",
+							"        \"id\": {",
+							"          \"type\": \"integer\"",
+							"        },",
+							"        \"coupon\": {",
+							"          \"type\": \"null\"",
+							"        },",
+							"        \"UserId\": {",
+							"          \"type\": \"integer\"",
+							"        },",
+							"        \"createdAt\": {",
+							"          \"type\": \"string\"",
+							"        },",
+							"        \"updatedAt\": {",
+							"          \"type\": \"string\"",
+							"        },",
+							"        \"Products\": {",
+							"          \"type\": \"array\",",
+							"          \"items\": [",
+							"            {",
+							"              \"type\": \"object\",",
+							"              \"properties\": {",
+							"                \"id\": {",
+							"                  \"type\": \"integer\"",
+							"                },",
+							"                \"name\": {",
+							"                  \"type\": \"string\"",
+							"                },",
+							"                \"description\": {",
+							"                  \"type\": \"string\"",
+							"                },",
+							"                \"price\": {",
+							"                  \"type\": \"number\"",
+							"                },",
+							"                \"deluxePrice\": {",
+							"                  \"type\": \"number\"",
+							"                },",
+							"                \"image\": {",
+							"                  \"type\": \"string\"",
+							"                },",
+							"                \"createdAt\": {",
+							"                  \"type\": \"string\"",
+							"                },",
+							"                \"updatedAt\": {",
+							"                  \"type\": \"string\"",
+							"                },",
+							"                \"deletedAt\": {",
+							"                  \"type\": \"null\"",
+							"                },",
+							"                \"BasketItem\": {",
+							"                  \"type\": \"object\",",
+							"                  \"properties\": {",
+							"                    \"ProductId\": {",
+							"                      \"type\": \"integer\"",
+							"                    },",
+							"                    \"BasketId\": {",
+							"                      \"type\": \"integer\"",
+							"                    },",
+							"                    \"id\": {",
+							"                      \"type\": \"integer\"",
+							"                    },",
+							"                    \"quantity\": {",
+							"                      \"type\": \"integer\"",
+							"                    },",
+							"                    \"createdAt\": {",
+							"                      \"type\": \"string\"",
+							"                    },",
+							"                    \"updatedAt\": {",
+							"                      \"type\": \"string\"",
+							"                    }",
+							"                  },",
+							"                  \"required\": [",
+							"                    \"ProductId\",",
+							"                    \"BasketId\",",
+							"                    \"id\",",
+							"                    \"quantity\",",
+							"                    \"createdAt\",",
+							"                    \"updatedAt\"",
+							"                  ]",
+							"                }",
+							"              },",
+							"              \"required\": [",
+							"                \"id\",",
+							"                \"name\",",
+							"                \"description\",",
+							"                \"price\",",
+							"                \"deluxePrice\",",
+							"                \"image\",",
+							"                \"createdAt\",",
+							"                \"updatedAt\",",
+							"                \"deletedAt\",",
+							"                \"BasketItem\"",
+							"              ]",
+							"            }",
+							"          ]",
+							"        }",
+							"      },",
+							"      \"required\": [",
+							"        \"id\",",
+							"        \"coupon\",",
+							"        \"UserId\",",
+							"        \"createdAt\",",
+							"        \"updatedAt\",",
+							"        \"Products\"",
+							"      ]",
+							"    }",
+							"  },",
+							"  \"required\": [",
+							"    \"status\",",
+							"    \"data\"",
+							"  ]",
+							"}",
+							"pm.test('Schema is valid', function () {",
+							"    pm.expect(tv4.validate(jsonData, responseChema)).to.be.true;",
+							"});",
+							"",
+							""
+						],
+						"type": "text/javascript"
+					}
+				}
+			],
+			"request": {
+				"method": "GET",
+				"header": [
+					{
+						"key": "authority",
+						"value": "juice-shop.guardrails.ai"
+					},
+					{
+						"key": "accept",
+						"value": "application/json, text/plain, */*"
+					},
+					{
+						"key": "accept-language",
+						"value": "en,en-US;q=0.9,vi-VN;q=0.8,vi;q=0.7,fr;q=0.6"
+					},
+					{
+						"key": "authorization",
+						"value": "Bearer {{token}}"
+					},
+					{
+						"key": "cookie",
+						"value": "language=en; welcomebanner_status=dismiss; continueCode=xYj5K86Bp7Nq2kjrWRX591myLQzdgmTVq0YxJMoPKgwnVv4EaDbZe3OlR87y; cookieconsent_status=dismiss; token=eyJ0eXAiOiJKV1QiLCJhbGciOiJSUzI1NiJ9.eyJzdGF0dXMiOiJzdWNjZXNzIiwiZGF0YSI6eyJpZCI6MjUsInVzZXJuYW1lIjoiIiwiZW1haWwiOiJpdC5kdW5nOTFAZ21haWwuY29tIiwicGFzc3dvcmQiOiI4YzU0MWIzYjZiOTIwYmZkNjdjNzQxZTRkMDZiNWY1NSIsInJvbGUiOiJjdXN0b21lciIsImRlbHV4ZVRva2VuIjoiIiwibGFzdExvZ2luSXAiOiJ1bmRlZmluZWQiLCJwcm9maWxlSW1hZ2UiOiIvYXNzZXRzL3B1YmxpYy9pbWFnZXMvdXBsb2Fkcy9kZWZhdWx0LnN2ZyIsInRvdHBTZWNyZXQiOiIiLCJpc0FjdGl2ZSI6dHJ1ZSwiY3JlYXRlZEF0IjoiMjAyMi0xMS0wMyAxNDo1ODoyNy4wNDUgKzAwOjAwIiwidXBkYXRlZEF0IjoiMjAyMi0xMS0wMyAxNTowNjo1MC44MTUgKzAwOjAwIiwiZGVsZXRlZEF0IjpudWxsfSwiaWF0IjoxNjY3NzA3NzQ5LCJleHAiOjE2Njc3MjU3NDl9.Ho7nS12G6VS1ZfSoMKqK6bt_zF-zyvcLWC0uu-MWqZbFDsAIdkvknaTrAt6ljVU4iT8mNU6Gzm8z-7saVNCbEhESsVXNWqUNEQ4iONFr_6JRqdq9YXHdxw9vvdWYsOZ0x9bcO1EjcXMcV4G-EOxqfADAvLqdqYN-zI7FBLnv9bY"
+					},
+					{
+						"key": "if-none-match",
+						"value": "W/\"215-hxe3g/mVQLFuDn4p2Pw8S8PbyZU\""
+					},
+					{
+						"key": "referer",
+						"value": "https://juice-shop.guardrails.ai/"
+					},
+					{
+						"key": "sec-ch-ua",
+						"value": "\"Google Chrome\";v=\"107\", \"Chromium\";v=\"107\", \"Not=A?Brand\";v=\"24\""
+					},
+					{
+						"key": "sec-ch-ua-mobile",
+						"value": "?0"
+					},
+					{
+						"key": "sec-ch-ua-platform",
+						"value": "\"macOS\""
+					},
+					{
+						"key": "sec-fetch-dest",
+						"value": "empty"
+					},
+					{
+						"key": "sec-fetch-mode",
+						"value": "cors"
+					},
+					{
+						"key": "sec-fetch-site",
+						"value": "same-origin"
+					},
+					{
+						"key": "user-agent",
+						"value": "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/107.0.0.0 Safari/537.36"
+					},
+					{
+						"key": "x-consumer-username",
+						"value": "admin"
+					}
+				],
+				"url": {
+					"raw": "{{url}}/rest/basket/{{bid}}",
+					"host": [
+						"{{url}}"
+					],
+					"path": [
+						"rest",
+						"basket",
+						"{{bid}}"
+					]
+				}
+			},
+			"response": []
+		},
+		{
+			"name": "Add 2nd item to basket",
+			"event": [
+				{
+					"listen": "prerequest",
+					"script": {
+						"exec": [
+							""
+						],
+						"type": "text/javascript"
+					}
+				},
+				{
+					"listen": "test",
+					"script": {
+						"exec": [
+							"pm.test(\"Status code is 200\", function () {",
+							"    pm.response.to.have.status(200);",
+							"});",
+							"var jsonData = pm.response.json();",
+							"pm.globals.set(\"pid2\", jsonData.data.ProductId)",
+							""
+						],
+						"type": "text/javascript"
+					}
+				}
+			],
+			"request": {
+				"method": "POST",
+				"header": [
+					{
+						"key": "authority",
+						"value": "juice-shop.guardrails.ai"
+					},
+					{
+						"key": "accept",
+						"value": "application/json, text/plain, */*"
+					},
+					{
+						"key": "accept-language",
+						"value": "en,en-US;q=0.9,vi-VN;q=0.8,vi;q=0.7,fr;q=0.6"
+					},
+					{
+						"key": "authorization",
+						"value": "Bearer {{token}}"
+					},
+					{
+						"key": "content-type",
+						"value": "application/json"
+					},
+					{
+						"key": "cookie",
+						"value": "language=en; welcomebanner_status=dismiss; continueCode=xYj5K86Bp7Nq2kjrWRX591myLQzdgmTVq0YxJMoPKgwnVv4EaDbZe3OlR87y; cookieconsent_status=dismiss; token=eyJ0eXAiOiJKV1QiLCJhbGciOiJSUzI1NiJ9.eyJzdGF0dXMiOiJzdWNjZXNzIiwiZGF0YSI6eyJpZCI6MjUsInVzZXJuYW1lIjoiIiwiZW1haWwiOiJpdC5kdW5nOTFAZ21haWwuY29tIiwicGFzc3dvcmQiOiI4YzU0MWIzYjZiOTIwYmZkNjdjNzQxZTRkMDZiNWY1NSIsInJvbGUiOiJjdXN0b21lciIsImRlbHV4ZVRva2VuIjoiIiwibGFzdExvZ2luSXAiOiJ1bmRlZmluZWQiLCJwcm9maWxlSW1hZ2UiOiIvYXNzZXRzL3B1YmxpYy9pbWFnZXMvdXBsb2Fkcy9kZWZhdWx0LnN2ZyIsInRvdHBTZWNyZXQiOiIiLCJpc0FjdGl2ZSI6dHJ1ZSwiY3JlYXRlZEF0IjoiMjAyMi0xMS0wMyAxNDo1ODoyNy4wNDUgKzAwOjAwIiwidXBkYXRlZEF0IjoiMjAyMi0xMS0wMyAxNTowNjo1MC44MTUgKzAwOjAwIiwiZGVsZXRlZEF0IjpudWxsfSwiaWF0IjoxNjY3NzA1ODE3LCJleHAiOjE2Njc3MjM4MTd9.HhAOJWHNpeTjJqyeV71Xa_i7UprYlEUUOebRDEqxenJeofraAGftHo4U0i-45V1nljfy97ZR-RpKE9uJcnOXBsyPnb2jChpHPjoQcBUwXkfgwGUzHjQBfk9zIIYLL5je9PdIbMGAnYtxxO7T3dpo6CxYWFUhFR4eAquvOwyOmXU"
+					},
+					{
+						"key": "origin",
+						"value": "https://juice-shop.guardrails.ai"
+					},
+					{
+						"key": "referer",
+						"value": "https://juice-shop.guardrails.ai/"
+					},
+					{
+						"key": "sec-ch-ua",
+						"value": "\"Google Chrome\";v=\"107\", \"Chromium\";v=\"107\", \"Not=A?Brand\";v=\"24\""
+					},
+					{
+						"key": "sec-ch-ua-mobile",
+						"value": "?0"
+					},
+					{
+						"key": "sec-ch-ua-platform",
+						"value": "\"macOS\""
+					},
+					{
+						"key": "sec-fetch-dest",
+						"value": "empty"
+					},
+					{
+						"key": "sec-fetch-mode",
+						"value": "cors"
+					},
+					{
+						"key": "sec-fetch-site",
+						"value": "same-origin"
+					},
+					{
+						"key": "user-agent",
+						"value": "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/107.0.0.0 Safari/537.36"
+					},
+					{
+						"key": "x-consumer-username",
+						"value": "admin"
+					}
+				],
+				"body": {
+					"mode": "raw",
+					"raw": "{\"ProductId\":42,\"BasketId\":\"{{bid}}\",\"quantity\":1}"
+				},
+				"url": {
+					"raw": "{{url}}/api/BasketItems/",
+					"host": [
+						"{{url}}"
+					],
+					"path": [
+						"api",
+						"BasketItems",
+						""
+					]
+				}
+			},
+			"response": []
+		},
+		{
+			"name": "Get basket list after added 2 items",
+			"event": [
+				{
+					"listen": "prerequest",
+					"script": {
+						"exec": [
+							""
+						],
+						"type": "text/javascript"
+					}
+				},
+				{
+					"listen": "test",
+					"script": {
+						"exec": [
+							"var pid = pm.globals.get(\"pid\");",
+							"var pid2 = pm.globals.get(\"pid2\");",
+							"var jsonData = pm.response.json();",
+							"pm.test(\"Status code is 200\", function () {",
+							"    pm.response.to.have.status(200);",
+							"});",
+							"pm.test(\"Verify products in basket\", function () {",
+							"    pm.expect(pm.response.json().data.Products.length).to.be.eq(2)",
+							"    pm.expect(pm.response.json().data.Products[0].id).to.eq(pid);",
+							"     pm.expect(pm.response.json().data.Products[1].id).to.eq(pid2);",
+							"});",
+							" pm.globals.set(\"basketItemId\", jsonData.data.Products[0].BasketItem.id);",
+							"",
+							"",
+							""
+						],
+						"type": "text/javascript"
+					}
+				}
+			],
+			"request": {
+				"method": "GET",
+				"header": [
+					{
+						"key": "authority",
+						"value": "juice-shop.guardrails.ai"
+					},
+					{
+						"key": "accept",
+						"value": "application/json, text/plain, */*"
+					},
+					{
+						"key": "accept-language",
+						"value": "en,en-US;q=0.9,vi-VN;q=0.8,vi;q=0.7,fr;q=0.6"
+					},
+					{
+						"key": "authorization",
+						"value": "Bearer {{token}}"
+					},
+					{
+						"key": "cookie",
+						"value": "language=en; welcomebanner_status=dismiss; continueCode=xYj5K86Bp7Nq2kjrWRX591myLQzdgmTVq0YxJMoPKgwnVv4EaDbZe3OlR87y; cookieconsent_status=dismiss; token=eyJ0eXAiOiJKV1QiLCJhbGciOiJSUzI1NiJ9.eyJzdGF0dXMiOiJzdWNjZXNzIiwiZGF0YSI6eyJpZCI6MjUsInVzZXJuYW1lIjoiIiwiZW1haWwiOiJpdC5kdW5nOTFAZ21haWwuY29tIiwicGFzc3dvcmQiOiI4YzU0MWIzYjZiOTIwYmZkNjdjNzQxZTRkMDZiNWY1NSIsInJvbGUiOiJjdXN0b21lciIsImRlbHV4ZVRva2VuIjoiIiwibGFzdExvZ2luSXAiOiJ1bmRlZmluZWQiLCJwcm9maWxlSW1hZ2UiOiIvYXNzZXRzL3B1YmxpYy9pbWFnZXMvdXBsb2Fkcy9kZWZhdWx0LnN2ZyIsInRvdHBTZWNyZXQiOiIiLCJpc0FjdGl2ZSI6dHJ1ZSwiY3JlYXRlZEF0IjoiMjAyMi0xMS0wMyAxNDo1ODoyNy4wNDUgKzAwOjAwIiwidXBkYXRlZEF0IjoiMjAyMi0xMS0wMyAxNTowNjo1MC44MTUgKzAwOjAwIiwiZGVsZXRlZEF0IjpudWxsfSwiaWF0IjoxNjY3NzA3NzQ5LCJleHAiOjE2Njc3MjU3NDl9.Ho7nS12G6VS1ZfSoMKqK6bt_zF-zyvcLWC0uu-MWqZbFDsAIdkvknaTrAt6ljVU4iT8mNU6Gzm8z-7saVNCbEhESsVXNWqUNEQ4iONFr_6JRqdq9YXHdxw9vvdWYsOZ0x9bcO1EjcXMcV4G-EOxqfADAvLqdqYN-zI7FBLnv9bY"
+					},
+					{
+						"key": "if-none-match",
+						"value": "W/\"215-hxe3g/mVQLFuDn4p2Pw8S8PbyZU\""
+					},
+					{
+						"key": "referer",
+						"value": "https://juice-shop.guardrails.ai/"
+					},
+					{
+						"key": "sec-ch-ua",
+						"value": "\"Google Chrome\";v=\"107\", \"Chromium\";v=\"107\", \"Not=A?Brand\";v=\"24\""
+					},
+					{
+						"key": "sec-ch-ua-mobile",
+						"value": "?0"
+					},
+					{
+						"key": "sec-ch-ua-platform",
+						"value": "\"macOS\""
+					},
+					{
+						"key": "sec-fetch-dest",
+						"value": "empty"
+					},
+					{
+						"key": "sec-fetch-mode",
+						"value": "cors"
+					},
+					{
+						"key": "sec-fetch-site",
+						"value": "same-origin"
+					},
+					{
+						"key": "user-agent",
+						"value": "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/107.0.0.0 Safari/537.36"
+					},
+					{
+						"key": "x-consumer-username",
+						"value": "admin"
+					}
+				],
+				"url": {
+					"raw": "{{url}}/rest/basket/{{bid}}",
+					"host": [
+						"{{url}}"
+					],
+					"path": [
+						"rest",
+						"basket",
+						"{{bid}}"
+					]
+				}
+			},
+			"response": []
+		},
+		{
+			"name": "Delete 1st item",
+			"event": [
+				{
+					"listen": "test",
+					"script": {
+						"exec": [
+							"pm.test(\"Status code is 200\", function () {",
+							"    pm.response.to.have.status(200);",
+							"});",
+							"pm.test(\"Verify status text\", function () {",
+							"    var jsonData = pm.response.json();",
+							"    pm.expect(jsonData.status).to.eql('success');",
+							"});"
+						],
+						"type": "text/javascript"
+					}
+				},
+				{
+					"listen": "prerequest",
+					"script": {
+						"exec": [
+							"pm.globals.get(\"basketItemId\");",
+							"pm.globals.get(\"token\")"
+						],
+						"type": "text/javascript"
+					}
+				}
+			],
+			"request": {
+				"method": "DELETE",
+				"header": [
+					{
+						"key": "authority",
+						"value": "juice-shop.guardrails.ai"
+					},
+					{
+						"key": "accept",
+						"value": "application/json, text/plain, */*"
+					},
+					{
+						"key": "accept-language",
+						"value": "en,en-US;q=0.9,vi-VN;q=0.8,vi;q=0.7,fr;q=0.6"
+					},
+					{
+						"key": "authorization",
+						"value": "Bearer {{token}}"
+					},
+					{
+						"key": "cookie",
+						"value": "language=en; welcomebanner_status=dismiss; continueCode=xYj5K86Bp7Nq2kjrWRX591myLQzdgmTVq0YxJMoPKgwnVv4EaDbZe3OlR87y; cookieconsent_status=dismiss; token=eyJ0eXAiOiJKV1QiLCJhbGciOiJSUzI1NiJ9.eyJzdGF0dXMiOiJzdWNjZXNzIiwiZGF0YSI6eyJpZCI6MjUsInVzZXJuYW1lIjoiIiwiZW1haWwiOiJpdC5kdW5nOTFAZ21haWwuY29tIiwicGFzc3dvcmQiOiI4YzU0MWIzYjZiOTIwYmZkNjdjNzQxZTRkMDZiNWY1NSIsInJvbGUiOiJjdXN0b21lciIsImRlbHV4ZVRva2VuIjoiIiwibGFzdExvZ2luSXAiOiJ1bmRlZmluZWQiLCJwcm9maWxlSW1hZ2UiOiIvYXNzZXRzL3B1YmxpYy9pbWFnZXMvdXBsb2Fkcy9kZWZhdWx0LnN2ZyIsInRvdHBTZWNyZXQiOiIiLCJpc0FjdGl2ZSI6dHJ1ZSwiY3JlYXRlZEF0IjoiMjAyMi0xMS0wMyAxNDo1ODoyNy4wNDUgKzAwOjAwIiwidXBkYXRlZEF0IjoiMjAyMi0xMS0wMyAxNTowNjo1MC44MTUgKzAwOjAwIiwiZGVsZXRlZEF0IjpudWxsfSwiaWF0IjoxNjY3NzA4MjI5LCJleHAiOjE2Njc3MjYyMjl9.WdNo9_NNcuAXLJDP4OHAyoYhpwr2i01cjQeA7LTzfxiQzAyYj3po0lSFnhewM7Y4O-awhfiBMZNNlWs6FwjVVA9tNHMtOkuDLX_MZ2-DL71b_O38IxOr3THXY44Xyco38JyzFOHIb-XAzfopQ0Pl9hyDSFzw2naqUOD_0kC02zg"
+					},
+					{
+						"key": "origin",
+						"value": "https://juice-shop.guardrails.ai"
+					},
+					{
+						"key": "referer",
+						"value": "https://juice-shop.guardrails.ai/"
+					},
+					{
+						"key": "sec-ch-ua",
+						"value": "\"Google Chrome\";v=\"107\", \"Chromium\";v=\"107\", \"Not=A?Brand\";v=\"24\""
+					},
+					{
+						"key": "sec-ch-ua-mobile",
+						"value": "?0"
+					},
+					{
+						"key": "sec-ch-ua-platform",
+						"value": "\"macOS\""
+					},
+					{
+						"key": "sec-fetch-dest",
+						"value": "empty"
+					},
+					{
+						"key": "sec-fetch-mode",
+						"value": "cors"
+					},
+					{
+						"key": "sec-fetch-site",
+						"value": "same-origin"
+					},
+					{
+						"key": "user-agent",
+						"value": "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/107.0.0.0 Safari/537.36"
+					},
+					{
+						"key": "x-consumer-username",
+						"value": "admin"
+					}
+				],
+				"url": {
+					"raw": "{{url}}/api/BasketItems/{{basketItemId}}",
+					"host": [
+						"{{url}}"
+					],
+					"path": [
+						"api",
+						"BasketItems",
+						"{{basketItemId}}"
+					]
+				}
+			},
+			"response": []
+		},
+		{
+			"name": "Get basket list after delete",
+			"event": [
+				{
+					"listen": "prerequest",
+					"script": {
+						"exec": [
+							""
+						],
+						"type": "text/javascript"
+					}
+				},
+				{
+					"listen": "test",
+					"script": {
+						"exec": [
+							"var pid2 = pm.globals.get(\"pid2\");",
+							"var jsonData = pm.response.json();",
+							"pm.globals.set(\"jsonresponse\",jsonData )",
+							"pm.test(\"Status code is 200\", function () {",
+							"    pm.response.to.have.status(200);",
+							"});",
+							"pm.test(\"Verify products in basket\", function () {",
+							"    pm.expect(jsonData.data.Products[0].id).to.eq(pid2);",
+							"    pm.expect(jsonData.data.Products.length).to.be.eq(1);",
+							"});",
+							"pm.globals.set(\"basketItemId\", jsonData.data.Products[0].BasketItem.id);"
+						],
+						"type": "text/javascript"
+					}
+				}
+			],
+			"request": {
+				"method": "GET",
+				"header": [
+					{
+						"key": "authority",
+						"value": "juice-shop.guardrails.ai"
+					},
+					{
+						"key": "accept",
+						"value": "application/json, text/plain, */*"
+					},
+					{
+						"key": "accept-language",
+						"value": "en,en-US;q=0.9,vi-VN;q=0.8,vi;q=0.7,fr;q=0.6"
+					},
+					{
+						"key": "authorization",
+						"value": "Bearer {{token}}"
+					},
+					{
+						"key": "cookie",
+						"value": "language=en; welcomebanner_status=dismiss; continueCode=xYj5K86Bp7Nq2kjrWRX591myLQzdgmTVq0YxJMoPKgwnVv4EaDbZe3OlR87y; cookieconsent_status=dismiss; token=eyJ0eXAiOiJKV1QiLCJhbGciOiJSUzI1NiJ9.eyJzdGF0dXMiOiJzdWNjZXNzIiwiZGF0YSI6eyJpZCI6MjUsInVzZXJuYW1lIjoiIiwiZW1haWwiOiJpdC5kdW5nOTFAZ21haWwuY29tIiwicGFzc3dvcmQiOiI4YzU0MWIzYjZiOTIwYmZkNjdjNzQxZTRkMDZiNWY1NSIsInJvbGUiOiJjdXN0b21lciIsImRlbHV4ZVRva2VuIjoiIiwibGFzdExvZ2luSXAiOiJ1bmRlZmluZWQiLCJwcm9maWxlSW1hZ2UiOiIvYXNzZXRzL3B1YmxpYy9pbWFnZXMvdXBsb2Fkcy9kZWZhdWx0LnN2ZyIsInRvdHBTZWNyZXQiOiIiLCJpc0FjdGl2ZSI6dHJ1ZSwiY3JlYXRlZEF0IjoiMjAyMi0xMS0wMyAxNDo1ODoyNy4wNDUgKzAwOjAwIiwidXBkYXRlZEF0IjoiMjAyMi0xMS0wMyAxNTowNjo1MC44MTUgKzAwOjAwIiwiZGVsZXRlZEF0IjpudWxsfSwiaWF0IjoxNjY3NzA3NzQ5LCJleHAiOjE2Njc3MjU3NDl9.Ho7nS12G6VS1ZfSoMKqK6bt_zF-zyvcLWC0uu-MWqZbFDsAIdkvknaTrAt6ljVU4iT8mNU6Gzm8z-7saVNCbEhESsVXNWqUNEQ4iONFr_6JRqdq9YXHdxw9vvdWYsOZ0x9bcO1EjcXMcV4G-EOxqfADAvLqdqYN-zI7FBLnv9bY"
+					},
+					{
+						"key": "if-none-match",
+						"value": "W/\"215-hxe3g/mVQLFuDn4p2Pw8S8PbyZU\""
+					},
+					{
+						"key": "referer",
+						"value": "https://juice-shop.guardrails.ai/"
+					},
+					{
+						"key": "sec-ch-ua",
+						"value": "\"Google Chrome\";v=\"107\", \"Chromium\";v=\"107\", \"Not=A?Brand\";v=\"24\""
+					},
+					{
+						"key": "sec-ch-ua-mobile",
+						"value": "?0"
+					},
+					{
+						"key": "sec-ch-ua-platform",
+						"value": "\"macOS\""
+					},
+					{
+						"key": "sec-fetch-dest",
+						"value": "empty"
+					},
+					{
+						"key": "sec-fetch-mode",
+						"value": "cors"
+					},
+					{
+						"key": "sec-fetch-site",
+						"value": "same-origin"
+					},
+					{
+						"key": "user-agent",
+						"value": "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/107.0.0.0 Safari/537.36"
+					},
+					{
+						"key": "x-consumer-username",
+						"value": "admin"
+					}
+				],
+				"url": {
+					"raw": "{{url}}/rest/basket/{{bid}}",
+					"host": [
+						"{{url}}"
+					],
+					"path": [
+						"rest",
+						"basket",
+						"{{bid}}"
+					]
+				}
+			},
+			"response": []
+		},
+		{
+			"name": "Delete the added data (2nd product)",
+			"event": [
+				{
+					"listen": "test",
+					"script": {
+						"exec": [
+							"pm.test(\"Status code is 200\", function () {",
+							"    pm.response.to.have.status(200);",
+							"});"
+						],
+						"type": "text/javascript"
+					}
+				},
+				{
+					"listen": "prerequest",
+					"script": {
+						"exec": [
+							""
+						],
+						"type": "text/javascript"
+					}
+				}
+			],
+			"request": {
+				"method": "DELETE",
+				"header": [
+					{
+						"key": "authority",
+						"value": "juice-shop.guardrails.ai"
+					},
+					{
+						"key": "accept",
+						"value": "application/json, text/plain, */*"
+					},
+					{
+						"key": "accept-language",
+						"value": "en,en-US;q=0.9,vi-VN;q=0.8,vi;q=0.7,fr;q=0.6"
+					},
+					{
+						"key": "authorization",
+						"value": "Bearer {{token}}"
+					},
+					{
+						"key": "cookie",
+						"value": "language=en; welcomebanner_status=dismiss; continueCode=xYj5K86Bp7Nq2kjrWRX591myLQzdgmTVq0YxJMoPKgwnVv4EaDbZe3OlR87y; cookieconsent_status=dismiss; token=eyJ0eXAiOiJKV1QiLCJhbGciOiJSUzI1NiJ9.eyJzdGF0dXMiOiJzdWNjZXNzIiwiZGF0YSI6eyJpZCI6MjUsInVzZXJuYW1lIjoiIiwiZW1haWwiOiJpdC5kdW5nOTFAZ21haWwuY29tIiwicGFzc3dvcmQiOiI4YzU0MWIzYjZiOTIwYmZkNjdjNzQxZTRkMDZiNWY1NSIsInJvbGUiOiJjdXN0b21lciIsImRlbHV4ZVRva2VuIjoiIiwibGFzdExvZ2luSXAiOiJ1bmRlZmluZWQiLCJwcm9maWxlSW1hZ2UiOiIvYXNzZXRzL3B1YmxpYy9pbWFnZXMvdXBsb2Fkcy9kZWZhdWx0LnN2ZyIsInRvdHBTZWNyZXQiOiIiLCJpc0FjdGl2ZSI6dHJ1ZSwiY3JlYXRlZEF0IjoiMjAyMi0xMS0wMyAxNDo1ODoyNy4wNDUgKzAwOjAwIiwidXBkYXRlZEF0IjoiMjAyMi0xMS0wMyAxNTowNjo1MC44MTUgKzAwOjAwIiwiZGVsZXRlZEF0IjpudWxsfSwiaWF0IjoxNjY3NzA4MjI5LCJleHAiOjE2Njc3MjYyMjl9.WdNo9_NNcuAXLJDP4OHAyoYhpwr2i01cjQeA7LTzfxiQzAyYj3po0lSFnhewM7Y4O-awhfiBMZNNlWs6FwjVVA9tNHMtOkuDLX_MZ2-DL71b_O38IxOr3THXY44Xyco38JyzFOHIb-XAzfopQ0Pl9hyDSFzw2naqUOD_0kC02zg"
+					},
+					{
+						"key": "origin",
+						"value": "https://juice-shop.guardrails.ai"
+					},
+					{
+						"key": "referer",
+						"value": "https://juice-shop.guardrails.ai/"
+					},
+					{
+						"key": "sec-ch-ua",
+						"value": "\"Google Chrome\";v=\"107\", \"Chromium\";v=\"107\", \"Not=A?Brand\";v=\"24\""
+					},
+					{
+						"key": "sec-ch-ua-mobile",
+						"value": "?0"
+					},
+					{
+						"key": "sec-ch-ua-platform",
+						"value": "\"macOS\""
+					},
+					{
+						"key": "sec-fetch-dest",
+						"value": "empty"
+					},
+					{
+						"key": "sec-fetch-mode",
+						"value": "cors"
+					},
+					{
+						"key": "sec-fetch-site",
+						"value": "same-origin"
+					},
+					{
+						"key": "user-agent",
+						"value": "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/107.0.0.0 Safari/537.36"
+					},
+					{
+						"key": "x-consumer-username",
+						"value": "admin"
+					}
+				],
+				"url": {
+					"raw": "{{url}}/api/BasketItems/{{basketItemId}}",
+					"host": [
+						"{{url}}"
+					],
+					"path": [
+						"api",
+						"BasketItems",
+						"{{basketItemId}}"
+					]
+				}
+			},
+			"response": []
+		}
+	],
+	"event": [
+		{
+			"listen": "prerequest",
+			"script": {
+				"type": "text/javascript",
+				"exec": [
+					""
+				]
+			}
+		},
+		{
+			"listen": "test",
+			"script": {
+				"type": "text/javascript",
+				"exec": [
+					""
+				]
+			}
+		}
+	]
+}

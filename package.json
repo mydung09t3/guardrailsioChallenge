@@ -1,0 +1,36 @@
+{
+  "name": "guardrail",
+  "version": "1.0.0",
+  "description": "",
+  "main": "index.js",
+  "scripts": {
+    "openTest": "cypress open",
+    "clean:reports": "rm -R -f cypress/reports && mkdir cypress/reports && mkdir cypress/reports/mochareports",
+    "pretest": "npm run clean:reports",
+    "scripts": "cypress run",
+    "combine-reports": "mochawesome-merge cypress/reports/mocha/*.json > cypress/reports/mochareports/report.json",
+    "generate-report": "marge cypress/reports/mochareports/report.json -f report -o cypress/reports/mochareports --inline",
+    "posttest": "npm run combine-reports && npm run generate-report",
+    "test": "npm run scripts || npm run posttest",
+    "apitest": "newman run cypress/test/API/GuardRailChallenge.postman_collection.json -e cypress/test/API/guardrail.postman_environment.json"
+  },
+  "keywords": [],
+  "author": "",
+  "license": "ISC",
+  "devDependencies": {
+    "cypress": "^10.3.0",
+    "cypress-grep": "^2.6.1",
+    "cypress-mochawesome-reporter": "^3.2.0",
+    "cypress-xpath": "^1.6.2",
+    "mocha": "^9.2.2",
+    "mochawesome": "^7.1.3",
+    "mochawesome-merge": "^4.2.1",
+    "prettier": "^2.6.2"
+  },
+  "dependencies": {
+    "@faker-js/faker": "^6.2.0",
+    "cypress-multi-reporters": "^1.6.0",
+    "dateformat": "^5.0.3",
+    "mochawesome-report-generator": "^6.2.0"
+  }
+}
