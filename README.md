@@ -4,12 +4,14 @@ GuardRails Challenge
 1. Clone code from github
 2. Install nodes and npm package 
  If your machine already had Node and npm package, ignore this step
-3. Install cypress, newman and dependencies 
+3. Install cypress and dependencies 
    > npm install    
 4. Run the test and generate report 
    > npm run test
-5. Go to folder "cypress/reports/mochareports/report.html" and copy the path then open in the browser to view report.
-6. How to run API Test: 
+5. Install Newman
+   > npm install newman
+6. Go to folder "cypress/reports/mochareports/report.html" and copy the path then open in the browser to view report.
+7. How to run API Test: 
    1. Run below command line to run api test. 
      > npm run apitest 
    2. The API test is stored in "cypress/test/API folder". It has 2 files: collection.json and environment.json.
@@ -29,7 +31,7 @@ GuardRails Challenge
 4. Run headless and use specific browser:
  - Add "--browser chrome" to after "cypress run" in "scripts" (package.json file) line if want to run on specific browser
  - Add "--headed" to force browser show when run cypress
-  >ex: "scripts": "cypress run --browser chrome --headed" : it will run test using chrome and show the browser. 
+   > ex: "scripts": "cypress run --browser chrome --headed" : it will run test using chrome and show the browser. 
 
 Note: I'm doing on MAC. If you run on Window, Please change the command "clean:reports" to like below:
-  > "clean:reports": "(if exist cypress\\reports (rmdir /S /Q cypress\\reports)) && mkdir cypress\\reports && mkdir cypress\\reports\\mocha  &&  mkdir cypress\\reports\\mochareports"
+   > "clean:reports": "(if exist cypress\\reports (rmdir /S /Q cypress\\reports)) && mkdir cypress\\reports && mkdir cypress\\reports\\mocha  &&  mkdir cypress\\reports\\mochareports"
